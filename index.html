@@ -237,6 +237,11 @@ main{max-width:960px;margin:0 auto;padding:26px 20px 80px;}
   margin-top:34px;padding-top:18px;border-top:1px solid var(--border);
   font-size:12.5px;color:var(--text-muted);display:flex;gap:14px;flex-wrap:wrap;align-items:center;
 }
+.week-label{
+  font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--text-muted);margin:18px 0 8px;
+}
+.week-group:first-child .week-label{margin-top:0;}
 .loading{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;}
 @media (max-width:640px){
   .stats{grid-template-columns:1fr 1fr;}
@@ -335,6 +340,11 @@ main{max-width:960px;margin:0 auto;padding:26px 20px 80px;}
         </div>
       </div>
 
+      <div id="view-switch" class="tabs" style="margin-bottom:14px;">
+        <button class="tab active" data-view="list">Lista</button>
+        <button class="tab" data-view="week">Por semana</button>
+      </div>
+
       <div id="open-list"></div>
 
       <div style="margin-top:26px;">
@@ -381,7 +391,7 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* =============== ESTADO =============== */
 var state = { people: [], tasks: [] };
-var session = { personId:null, tab:"mine", viewingPersonId:null, showDone:false, editingId:null };
+var session = { personId:null, tab:"mine", viewingPersonId:null, showDone:false, editingId:null, viewMode:"list" };
 
 function todayISO(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
 function pad(n){ return n<10 ? "0"+n : ""+n; }
@@ -478,6 +488,16 @@ function isoWeek(iso){
   var week1 = new Date(d.getFullYear(), 0, 4);
   return 1 + Math.round(((d-week1)/86400000 - 3 + ((week1.getDay()+6)%7)) / 7);
 }
+function weekMonday(iso){
+  var d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate() - ((d.getDay()+6)%7));
+  return d;
+}
+function isoDate(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function fmtShort(d){
+  var m = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  return d.getDate() + " " + m[d.getMonth()];
+}
 var PRIO_RANK = {alta:0, media:1, baja:2};
 function sortOpen(a,b){
   var ao=isOverdue(a)?0:1, bo=isOverdue(b)?0:1; if(ao!==bo) return ao-bo;
@@ -555,7 +575,7 @@ $("btn-exit").onclick = function(){
 };
 
 /* =============== TABS =============== */
-Array.prototype.forEach.call(document.querySelectorAll(".tab"), function(b){
+Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function(b){
   b.onclick = function(){
     session.tab = b.getAttribute("data-tab");
     session.viewingPersonId = null;
@@ -563,6 +583,14 @@ Array.prototype.forEach.call(document.querySelectorAll(".tab"), function(b){
   };
 });
 $("btn-back").onclick = function(){ session.viewingPersonId = null; render(); };
+
+/* =============== INTERRUPTOR LISTA / SEMANA =============== */
+Array.prototype.forEach.call(document.querySelectorAll("#view-switch .tab"), function(b){
+  b.onclick = function(){
+    session.viewMode = b.getAttribute("data-view");
+    render();
+  };
+});
 
 /* =============== CAPTURA =============== */
 $("btn-more").onclick = function(){ $("composer-extra").classList.toggle("open"); };
@@ -620,7 +648,7 @@ function renderMine(){
   $("bar-fill").style.width = pctVal + "%";
 
   $("open-list").innerHTML = open.length
-    ? open.map(taskHTML).join("")
+    ? (session.viewMode === "week" ? renderWeekGroups(open) : open.map(taskHTML).join(""))
     : '<div class="empty">Sin pendientes abiertos. Agrega uno arriba.</div>';
 
   $("done-label").textContent = "Terminados (" + done.length + ")";
@@ -631,6 +659,32 @@ function renderMine(){
     : '<div class="empty">Todavía no has cerrado nada. Ya llegará.</div>';
 
   wireTasks();
+}
+
+function renderWeekGroups(tasks){
+  var withDate = tasks.filter(function(t){ return t.due; });
+  var noDate = tasks.filter(function(t){ return !t.due; });
+  var groups = {};
+  withDate.forEach(function(t){
+    var monday = weekMonday(t.due);
+    var k = isoDate(monday);
+    if(!groups[k]) groups[k] = [];
+    groups[k].push(t);
+  });
+  var keys = Object.keys(groups).sort();
+  var html = keys.map(function(k){
+    var items = groups[k].slice().sort(sortOpen);
+    var monday = new Date(k+"T00:00:00");
+    var sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+    var label = "Semana "+isoWeek(k)+" · "+fmtShort(monday)+" – "+fmtShort(sunday);
+    return '<div class="week-group"><div class="week-label">'+esc(label)+'</div>' +
+      items.map(taskHTML).join("") + '</div>';
+  }).join("");
+  if(noDate.length){
+    html += '<div class="week-group"><div class="week-label">Sin fecha</div>' +
+      noDate.slice().sort(sortOpen).map(taskHTML).join("") + '</div>';
+  }
+  return html;
 }
 
 function taskHTML(t){
@@ -865,8 +919,11 @@ function render(){
   $("tabs").classList.toggle("hidden", !isLeader);
   if(!isLeader){ session.tab = "mine"; session.viewingPersonId = null; }
 
-  document.querySelectorAll(".tab").forEach(function(b){
+  document.querySelectorAll("#tabs .tab").forEach(function(b){
     b.classList.toggle("active", b.getAttribute("data-tab")===session.tab);
+  });
+  document.querySelectorAll("#view-switch .tab").forEach(function(b){
+    b.classList.toggle("active", b.getAttribute("data-view")===session.viewMode);
   });
 
   var showPerson = isLeader && session.viewingPersonId;
