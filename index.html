@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ritmo — Planner de equipo</title>
+<title>Seguimiento Comercial LogisPro</title>
 <style>
 :root{
   --bg:#FAF7F2;
   --surface:#FFFFFF;
-  --terracota:#C4623F;
-  --terracota-dark:#A34E30;
-  --terracota-soft:#F6E7E0;
+  --primary:#1D8FD1;
+  --primary-dark:#15679C;
+  --primary-soft:#E1F0FA;
   --salvia:#7A9080;
   --salvia-soft:#E4EBE5;
   --text:#2E2A26;
@@ -43,15 +43,15 @@ h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em;}
   width:100%;padding:10px 12px;border:1px solid var(--border);
   border-radius:10px;background:var(--surface);outline:none;
 }
-.field:focus{border-color:var(--terracota);box-shadow:0 0 0 3px rgba(196,98,63,.12);}
+.field:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(29,143,209,.12);}
 label.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--text-muted);margin:0 0 5px 2px;}
 
 /* ---------- buttons ---------- */
 .btn{
   border:1px solid transparent;border-radius:10px;padding:10px 16px;
-  font-weight:600;background:var(--terracota);color:#fff;transition:background .15s;
+  font-weight:600;background:var(--primary);color:#fff;transition:background .15s;
 }
-.btn:hover{background:var(--terracota-dark);}
+.btn:hover{background:var(--primary-dark);}
 .btn:disabled{opacity:.6;cursor:default;}
 .btn-ghost{
   background:var(--surface);color:var(--text);border:1px solid var(--border);
@@ -72,7 +72,7 @@ label.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--text-muted)
   box-shadow:var(--shadow);padding:34px 32px;width:100%;max-width:420px;
 }
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-.brand-dot{width:26px;height:26px;border-radius:8px;background:var(--terracota);
+.brand-dot{width:26px;height:26px;border-radius:8px;background:var(--primary);
   display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;}
 .entry-sub{color:var(--text-muted);font-size:14px;margin:0 0 24px;}
 .role-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -81,7 +81,7 @@ label.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--text-muted)
   text-align:left;line-height:1.35;
 }
 .role-opt:hover{border-color:#D8CCBD;}
-.role-opt.sel{border-color:var(--terracota);background:var(--terracota-soft);}
+.role-opt.sel{border-color:var(--primary);background:var(--primary-soft);}
 .role-opt strong{display:block;font-size:14px;}
 .role-opt span{font-size:12px;color:var(--text-muted);}
 .known{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);}
@@ -91,7 +91,7 @@ label.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--text-muted)
   border:1px solid var(--border);background:var(--surface);border-radius:999px;
   padding:5px 12px;font-size:13px;color:var(--text);
 }
-.chip-person:hover{border-color:var(--terracota);color:var(--terracota);}
+.chip-person:hover{border-color:var(--primary);color:var(--primary);}
 
 /* ---------- app shell ---------- */
 .topbar{
@@ -170,11 +170,12 @@ main{max-width:960px;margin:0 auto;padding:26px 20px 80px;}
   font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;
   border:1px solid var(--border);color:var(--text-muted);background:#FBF8F4;
 }
-.tag.alta{background:var(--terracota-soft);color:var(--terracota-dark);border-color:#EFD6CB;}
+.tag.alta{background:var(--primary-soft);color:var(--primary-dark);border-color:#C7E2F5;}
 .tag.media{background:var(--ambar-soft);color:#8A6115;border-color:#F0E0C0;}
 .tag.baja{background:var(--salvia-soft);color:#4F6455;border-color:#D3DED6;}
 .tag.venc{background:var(--rojo-soft);color:var(--rojo);border-color:#EFD3CF;}
 .tag.hoy{background:var(--ambar-soft);color:#8A6115;border-color:#F0E0C0;}
+.tag.semana{background:#EEF4F8;color:var(--text-muted);border-color:var(--border);}
 .note{
   margin-top:8px;font-size:13.5px;color:var(--text-muted);background:#FBF8F4;
   border-left:2px solid var(--border);padding:6px 10px;border-radius:0 8px 8px 0;white-space:pre-wrap;
@@ -224,7 +225,7 @@ main{max-width:960px;margin:0 auto;padding:26px 20px 80px;}
   display:flex;gap:8px;align-items:baseline;
 }
 .plist li .dot{width:6px;height:6px;border-radius:50%;min-width:6px;background:var(--salvia);}
-.plist li .dot.alta{background:var(--terracota);}
+.plist li .dot.alta{background:var(--primary);}
 .plist li .dot.media{background:var(--ambar);}
 .pcard-foot{margin-top:14px;display:flex;gap:8px;}
 .support{
@@ -249,7 +250,7 @@ main{max-width:960px;margin:0 auto;padding:26px 20px 80px;}
 <!-- ============ ENTRADA ============ -->
 <div id="view-entry">
   <div class="entry-card">
-    <div class="brand"><span class="brand-dot">R</span><h1 style="font-size:19px;">Ritmo</h1></div>
+    <div class="brand"><span class="brand-dot">L</span><h1 style="font-size:18px;line-height:1.25;">Seguimiento Comercial LogisPro</h1></div>
     <p class="entry-sub">Tus pendientes y los del equipo, en un solo lugar.</p>
 
     <label class="lbl" for="in-name">¿Cómo te llamas?</label>
@@ -279,7 +280,7 @@ main{max-width:960px;margin:0 auto;padding:26px 20px 80px;}
 <div id="view-app" class="hidden">
   <div class="topbar">
     <div class="topbar-in">
-      <div class="brand"><span class="brand-dot">R</span><strong style="font-size:15px;">Ritmo</strong></div>
+      <div class="brand"><span class="brand-dot">L</span><strong style="font-size:15px;">LogisPro</strong></div>
       <div id="tabs" class="tabs hidden">
         <button class="tab active" data-tab="mine">Mis pendientes</button>
         <button class="tab" data-tab="team">Equipo</button>
@@ -470,6 +471,13 @@ function fmtDate(iso){
   var p = iso.split("-");
   return parseInt(p[2],10) + " " + m[parseInt(p[1],10)-1];
 }
+function isoWeek(iso){
+  if(!iso) return null;
+  var d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate() + 3 - ((d.getDay()+6)%7));
+  var week1 = new Date(d.getFullYear(), 0, 4);
+  return 1 + Math.round(((d-week1)/86400000 - 3 + ((week1.getDay()+6)%7)) / 7);
+}
 var PRIO_RANK = {alta:0, media:1, baja:2};
 function sortOpen(a,b){
   var ao=isOverdue(a)?0:1, bo=isOverdue(b)?0:1; if(ao!==bo) return ao-bo;
@@ -631,6 +639,7 @@ function taskHTML(t){
   if(isOverdue(t)) tags += '<span class="tag venc">Vencido · '+fmtDate(t.due)+'</span>';
   else if(isToday(t)) tags += '<span class="tag hoy">Vence hoy</span>';
   else if(t.due && !t.done) tags += '<span class="tag">'+fmtDate(t.due)+'</span>';
+  if(t.due) tags += '<span class="tag semana">Sem '+isoWeek(t.due)+'</span>';
   if(!t.done) tags += '<span class="tag '+t.priority+'">'+t.priority.charAt(0).toUpperCase()+t.priority.slice(1)+'</span>';
 
   var editing = session.editingId === t.id;
@@ -799,6 +808,7 @@ function renderPerson(){
     if(isOverdue(t)) tags += '<span class="tag venc">Vencido · '+fmtDate(t.due)+'</span>';
     else if(isToday(t)) tags += '<span class="tag hoy">Vence hoy</span>';
     else if(t.due) tags += '<span class="tag">'+fmtDate(t.due)+'</span>';
+    if(t.due) tags += '<span class="tag semana">Sem '+isoWeek(t.due)+'</span>';
     tags += '<span class="tag '+t.priority+'">'+t.priority.charAt(0).toUpperCase()+t.priority.slice(1)+'</span>';
     return '<div class="task'+(isOverdue(t)?' overdue':(isToday(t)?' today':''))+'">' +
       '<div class="task-body"><div class="task-text">'+esc(t.text)+'</div>' +
@@ -838,10 +848,10 @@ $("btn-export-csv").onclick = function(){
     lines.push([p.name, p.role, t.text, t.priority, t.due||"", t.note||"",
       t.done?"Terminado":"Abierto", (t.createdAt||"").slice(0,10), (t.doneAt||"").slice(0,10)].map(q).join(","));
   });
-  download("ritmo-"+todayISO()+".csv", "﻿"+lines.join("\n"), "text/csv;charset=utf-8");
+  download("logispro-"+todayISO()+".csv", "﻿"+lines.join("\n"), "text/csv;charset=utf-8");
 };
 $("btn-export-json").onclick = function(){
-  download("ritmo-"+todayISO()+".json", JSON.stringify(state,null,2), "application/json");
+  download("logispro-"+todayISO()+".json", JSON.stringify(state,null,2), "application/json");
 };
 
 /* =============== RENDER RAÍZ =============== */
