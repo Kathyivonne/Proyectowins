@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ritmo — Planner de equipo</title>
+<style>
+:root{
+  --bg:#FAF7F2;
+  --surface:#FFFFFF;
+  --terracota:#C4623F;
+  --terracota-dark:#A34E30;
+  --terracota-soft:#F6E7E0;
+  --salvia:#7A9080;
+  --salvia-soft:#E4EBE5;
+  --text:#2E2A26;
+  --text-muted:#7A716A;
+  --border:#E8E0D6;
+  --ambar:#D99A2B;
+  --ambar-soft:#FBF0DA;
+  --rojo:#A83E3E;
+  --rojo-soft:#F7E5E3;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(46,42,38,.04), 0 4px 12px rgba(46,42,38,.05);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;font-size:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;font-size:inherit;color:var(--text);}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em;}
+.hidden{display:none !important;}
+
+/* ---------- inputs ---------- */
+.field{
+  width:100%;padding:10px 12px;border:1px solid var(--border);
+  border-radius:10px;background:var(--surface);outline:none;
+}
+.field:focus{border-color:var(--terracota);box-shadow:0 0 0 3px rgba(196,98,63,.12);}
+label.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--text-muted);margin:0 0 5px 2px;}
+
+/* ---------- buttons ---------- */
+.btn{
+  border:1px solid transparent;border-radius:10px;padding:10px 16px;
+  font-weight:600;background:var(--terracota);color:#fff;transition:background .15s;
+}
+.btn:hover{background:var(--terracota-dark);}
+.btn:disabled{opacity:.6;cursor:default;}
+.btn-ghost{
+  background:var(--surface);color:var(--text);border:1px solid var(--border);
+}
+.btn-ghost:hover{background:#F3EEE7;}
+.btn-sm{padding:6px 11px;font-size:13px;border-radius:8px;font-weight:500;}
+.btn-link{
+  background:none;border:none;color:var(--text-muted);padding:4px 6px;
+  font-size:13px;border-radius:6px;
+}
+.btn-link:hover{background:#F3EEE7;color:var(--text);}
+.btn-link.danger:hover{background:var(--rojo-soft);color:var(--rojo);}
+
+/* ---------- entry screen ---------- */
+#view-entry{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.entry-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  box-shadow:var(--shadow);padding:34px 32px;width:100%;max-width:420px;
+}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.brand-dot{width:26px;height:26px;border-radius:8px;background:var(--terracota);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;}
+.entry-sub{color:var(--text-muted);font-size:14px;margin:0 0 24px;}
+.role-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.role-opt{
+  border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--surface);
+  text-align:left;line-height:1.35;
+}
+.role-opt:hover{border-color:#D8CCBD;}
+.role-opt.sel{border-color:var(--terracota);background:var(--terracota-soft);}
+.role-opt strong{display:block;font-size:14px;}
+.role-opt span{font-size:12px;color:var(--text-muted);}
+.known{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);}
+.known-title{font-size:12.5px;font-weight:600;color:var(--text-muted);margin-bottom:9px;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;}
+.chip-person{
+  border:1px solid var(--border);background:var(--surface);border-radius:999px;
+  padding:5px 12px;font-size:13px;color:var(--text);
+}
+.chip-person:hover{border-color:var(--terracota);color:var(--terracota);}
+
+/* ---------- app shell ---------- */
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:20;
+}
+.topbar-in{
+  max-width:960px;margin:0 auto;padding:12px 20px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.tabs{display:flex;gap:4px;background:#F3EEE7;padding:3px;border-radius:10px;}
+.tab{
+  border:none;background:none;padding:6px 14px;border-radius:8px;
+  font-size:13.5px;font-weight:600;color:var(--text-muted);
+}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(46,42,38,.08);}
+.spacer{flex:1;}
+.who{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--text-muted);}
+.avatar{
+  width:28px;height:28px;border-radius:50%;background:var(--salvia-soft);color:var(--salvia);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;
+  border:1px solid #D3DED6;
+}
+main{max-width:960px;margin:0 auto;padding:26px 20px 80px;}
+
+/* ---------- headline / progress ---------- */
+.head{margin-bottom:20px;}
+.head h2{font-size:22px;}
+.head p{margin:4px 0 0;color:var(--text-muted);font-size:14px;}
+.progress-wrap{margin-top:16px;}
+.progress-meta{display:flex;justify-content:space-between;font-size:13px;color:var(--text-muted);margin-bottom:6px;}
+.bar{height:8px;background:var(--border);border-radius:999px;overflow:hidden;}
+.bar > i{display:block;height:100%;background:var(--salvia);border-radius:999px;transition:width .3s;}
+
+/* ---------- composer ---------- */
+.composer{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:12px;margin-bottom:22px;
+}
+.composer-row{display:flex;gap:9px;align-items:center;}
+.composer-row .field{border:none;box-shadow:none;padding:8px 6px;font-size:15.5px;}
+.composer-row .field:focus{box-shadow:none;}
+.composer-extra{
+  display:none;gap:10px;margin-top:10px;padding-top:11px;
+  border-top:1px solid var(--border);flex-wrap:wrap;align-items:flex-end;
+}
+.composer-extra.open{display:flex;}
+.composer-extra .grp{flex:1;min-width:150px;}
+.hint{font-size:12px;color:var(--text-muted);margin-top:9px;}
+
+/* ---------- task list ---------- */
+.section-title{
+  font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-muted);margin:24px 0 10px;
+}
+.task{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;
+  box-shadow:0 1px 2px rgba(46,42,38,.03);
+}
+.task.overdue{border-left:3px solid var(--rojo);}
+.task.today{border-left:3px solid var(--ambar);}
+.task.done{opacity:.62;}
+.cbox{
+  width:20px;height:20px;min-width:20px;margin-top:1px;border:1.6px solid #CFC4B6;
+  border-radius:6px;background:var(--surface);display:flex;align-items:center;justify-content:center;
+  color:transparent;font-size:12px;font-weight:800;transition:all .12s;
+}
+.cbox:hover{border-color:var(--salvia);}
+.task.done .cbox{background:var(--salvia);border-color:var(--salvia);color:#fff;}
+.task-body{flex:1;min-width:0;}
+.task-text{word-break:break-word;}
+.task.done .task-text{text-decoration:line-through;color:var(--text-muted);}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.tag{
+  font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;
+  border:1px solid var(--border);color:var(--text-muted);background:#FBF8F4;
+}
+.tag.alta{background:var(--terracota-soft);color:var(--terracota-dark);border-color:#EFD6CB;}
+.tag.media{background:var(--ambar-soft);color:#8A6115;border-color:#F0E0C0;}
+.tag.baja{background:var(--salvia-soft);color:#4F6455;border-color:#D3DED6;}
+.tag.venc{background:var(--rojo-soft);color:var(--rojo);border-color:#EFD3CF;}
+.tag.hoy{background:var(--ambar-soft);color:#8A6115;border-color:#F0E0C0;}
+.note{
+  margin-top:8px;font-size:13.5px;color:var(--text-muted);background:#FBF8F4;
+  border-left:2px solid var(--border);padding:6px 10px;border-radius:0 8px 8px 0;white-space:pre-wrap;
+}
+.task-actions{display:flex;gap:2px;opacity:0;transition:opacity .12s;}
+.task:hover .task-actions,.task:focus-within .task-actions{opacity:1;}
+.editbox{margin-top:10px;padding-top:11px;border-top:1px solid var(--border);}
+.editbox .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:9px;}
+.editbox .grp{flex:1;min-width:150px;}
+.collapse-btn{
+  background:none;border:none;padding:0;color:var(--text-muted);font-size:12.5px;
+  font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px;
+}
+.collapse-btn:hover{color:var(--text);}
+.empty{
+  text-align:center;padding:38px 20px;color:var(--text-muted);
+  border:1px dashed var(--border);border-radius:var(--radius);background:#FDFBF8;font-size:14px;
+}
+
+/* ---------- team board ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px;}
+.stat{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;box-shadow:var(--shadow);
+}
+.stat b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+.stat span{font-size:12.5px;color:var(--text-muted);}
+.stat.warn b{color:var(--rojo);}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:14px;}
+.pcard{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;
+}
+.pcard.attention{border-color:#E7C9C4;background:#FFFCFB;}
+.pcard-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.pcard-top .avatar{width:34px;height:34px;font-size:13px;}
+.pcard-name{font-weight:600;}
+.pcard-role{font-size:12px;color:var(--text-muted);}
+.flag{
+  font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;
+  background:var(--rojo-soft);color:var(--rojo);border:1px solid #EFD3CF;
+}
+.mini{font-size:13px;color:var(--text-muted);margin:10px 0 6px;}
+.plist{list-style:none;margin:8px 0 0;padding:0;}
+.plist li{
+  font-size:13.5px;padding:5px 0;border-top:1px solid var(--border);
+  display:flex;gap:8px;align-items:baseline;
+}
+.plist li .dot{width:6px;height:6px;border-radius:50%;min-width:6px;background:var(--salvia);}
+.plist li .dot.alta{background:var(--terracota);}
+.plist li .dot.media{background:var(--ambar);}
+.pcard-foot{margin-top:14px;display:flex;gap:8px;}
+.support{
+  margin-top:11px;font-size:13px;background:var(--rojo-soft);color:#7E2F2F;
+  border-radius:8px;padding:8px 10px;
+}
+.back{margin-bottom:14px;}
+.footer-note{
+  margin-top:34px;padding-top:18px;border-top:1px solid var(--border);
+  font-size:12.5px;color:var(--text-muted);display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+}
+.loading{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:14px;}
+@media (max-width:640px){
+  .stats{grid-template-columns:1fr 1fr;}
+  .topbar-in{padding:10px 14px;}
+  main{padding:20px 14px 60px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ ENTRADA ============ -->
+<div id="view-entry">
+  <div class="entry-card">
+    <div class="brand"><span class="brand-dot">R</span><h1 style="font-size:19px;">Ritmo</h1></div>
+    <p class="entry-sub">Tus pendientes y los del equipo, en un solo lugar.</p>
+
+    <label class="lbl" for="in-name">¿Cómo te llamas?</label>
+    <input id="in-name" class="field" placeholder="Escribe tu nombre" autocomplete="off">
+
+    <label class="lbl" style="margin-top:16px;">¿Cuál es tu rol?</label>
+    <div class="role-opts">
+      <button class="role-opt sel" data-role="miembro">
+        <strong>Miembro</strong><span>Veo y gestiono mis pendientes</span>
+      </button>
+      <button class="role-opt" data-role="lider">
+        <strong>Líder</strong><span>Además veo el tablero del equipo</span>
+      </button>
+    </div>
+
+    <button id="btn-enter" class="btn" style="width:100%;margin-top:18px;">Entrar</button>
+    <p id="entry-err" class="hint hidden" style="color:var(--rojo);"></p>
+
+    <div class="known">
+      <div class="known-title">O entra como alguien que ya está registrado</div>
+      <div id="known-list" class="chips"><span class="hint">Cargando...</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="view-app" class="hidden">
+  <div class="topbar">
+    <div class="topbar-in">
+      <div class="brand"><span class="brand-dot">R</span><strong style="font-size:15px;">Ritmo</strong></div>
+      <div id="tabs" class="tabs hidden">
+        <button class="tab active" data-tab="mine">Mis pendientes</button>
+        <button class="tab" data-tab="team">Equipo</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="who">
+        <div id="me-avatar" class="avatar">?</div>
+        <span id="me-name"></span>
+      </div>
+      <button id="btn-exit" class="btn-ghost btn btn-sm">Salir</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- ---- MI ESPACIO ---- -->
+    <section id="panel-mine">
+      <div class="head">
+        <h2 id="greet"></h2>
+        <p id="subgreet"></p>
+        <div class="progress-wrap">
+          <div class="progress-meta">
+            <span id="counts"></span>
+            <span id="pct"></span>
+          </div>
+          <div class="bar"><i id="bar-fill" style="width:0%"></i></div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <div class="composer-row">
+          <input id="in-task" class="field" placeholder="¿Qué tienes pendiente? Escribe y presiona Enter" autocomplete="off">
+          <button id="btn-more" class="btn-ghost btn btn-sm">Detalles</button>
+          <button id="btn-add" class="btn btn-sm">Agregar</button>
+        </div>
+        <div id="composer-extra" class="composer-extra">
+          <div class="grp">
+            <label class="lbl" for="in-prio">Prioridad</label>
+            <select id="in-prio" class="field">
+              <option value="media">Media</option>
+              <option value="alta">Alta</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
+          <div class="grp">
+            <label class="lbl" for="in-due">Fecha límite</label>
+            <input id="in-due" type="date" class="field">
+          </div>
+          <div class="grp" style="flex:2;min-width:220px;">
+            <label class="lbl" for="in-note">Nota</label>
+            <input id="in-note" class="field" placeholder="Contexto, bloqueo o enlace">
+          </div>
+        </div>
+      </div>
+
+      <div id="open-list"></div>
+
+      <div style="margin-top:26px;">
+        <button id="toggle-done" class="collapse-btn"><span id="caret">▸</span> <span id="done-label">Terminados</span></button>
+        <div id="done-list" class="hidden" style="margin-top:10px;"></div>
+      </div>
+    </section>
+
+    <!-- ---- TABLERO ---- -->
+    <section id="panel-team" class="hidden">
+      <div class="head">
+        <h2>Avance del equipo</h2>
+        <p>Primero aparece quien podría necesitar apoyo.</p>
+      </div>
+      <div id="team-stats" class="stats"></div>
+      <div id="team-people" class="people"></div>
+      <div class="footer-note">
+        <span>Los datos se guardan en la base de datos del equipo.</span>
+        <button id="btn-export-csv" class="btn-ghost btn btn-sm">Exportar CSV</button>
+        <button id="btn-export-json" class="btn-ghost btn btn-sm">Exportar JSON</button>
+      </div>
+    </section>
+
+    <!-- ---- DETALLE PERSONA ---- -->
+    <section id="panel-person" class="hidden">
+      <button id="btn-back" class="btn-ghost btn btn-sm back">← Volver al tablero</button>
+      <div id="person-detail"></div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+
+/* =============== CONEXIÓN A SUPABASE =============== */
+/* Estos dos valores identifican tu proyecto de Supabase. La llave "anon" es
+   pública a propósito: la seguridad real la dan las reglas de acceso (RLS)
+   que ya configuramos en las tablas, no el secreto de esta llave. */
+var SUPABASE_URL = "https://gpxwcvsofannmkbtxmnp.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_jRxthEzlrD2tBynvCTSSig_2qAX8WPE";
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* =============== ESTADO =============== */
+var state = { people: [], tasks: [] };
+var session = { personId:null, tab:"mine", viewingPersonId:null, showDone:false, editingId:null };
+
+function todayISO(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function pad(n){ return n<10 ? "0"+n : ""+n; }
+
+/* =============== CARGA Y GUARDADO EN SUPABASE =============== */
+function taskFromRow(r){
+  return {
+    id:r.id, personId:r.person_id, text:r.text, priority:r.priority,
+    due:r.due, note:r.note, done:r.done, createdAt:r.created_at, doneAt:r.done_at
+  };
+}
+
+async function loadState(){
+  var peopleRes = await sb.from("people").select("*").order("created_at");
+  var tasksRes = await sb.from("tasks").select("*").order("created_at");
+  if(peopleRes.error || tasksRes.error){
+    console.error(peopleRes.error || tasksRes.error);
+    alert("No se pudo conectar con la base de datos. Revisa tu conexión e intenta de nuevo.");
+    return;
+  }
+  state.people = peopleRes.data;
+  state.tasks = tasksRes.data.map(taskFromRow);
+}
+
+async function findOrCreatePerson(name, role){
+  var existing = state.people.filter(function(p){
+    return p.name.toLowerCase() === name.toLowerCase();
+  })[0];
+  if(existing){
+    if(existing.role !== role){
+      var upd = await sb.from("people").update({role:role}).eq("id", existing.id).select().single();
+      if(upd.error){ alert("No se pudo actualizar tu rol."); console.error(upd.error); return existing; }
+      existing.role = upd.data.role;
+    }
+    return existing;
+  }
+  var ins = await sb.from("people").insert({name:name, role:role}).select().single();
+  if(ins.error){
+    alert("No se pudo crear tu usuario. Intenta de nuevo.");
+    console.error(ins.error);
+    return null;
+  }
+  state.people.push(ins.data);
+  return ins.data;
+}
+
+async function insertTask(fields){
+  var ins = await sb.from("tasks").insert(fields).select().single();
+  if(ins.error){ alert("No se pudo guardar el pendiente."); console.error(ins.error); return null; }
+  var t = taskFromRow(ins.data);
+  state.tasks.push(t);
+  return t;
+}
+
+async function updateTask(id, fields){
+  var upd = await sb.from("tasks").update(fields).eq("id", id).select().single();
+  if(upd.error){ alert("No se pudo guardar el cambio."); console.error(upd.error); return null; }
+  var t = taskFromRow(upd.data);
+  state.tasks = state.tasks.map(function(x){ return x.id===id ? t : x; });
+  return t;
+}
+
+async function deleteTask(id){
+  var del = await sb.from("tasks").delete().eq("id", id);
+  if(del.error){ alert("No se pudo borrar el pendiente."); console.error(del.error); return false; }
+  state.tasks = state.tasks.filter(function(x){ return x.id!==id; });
+  return true;
+}
+
+/* =============== HELPERS =============== */
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function initials(name){
+  var p = name.trim().split(/\s+/);
+  return (p[0][0] + (p[1]?p[1][0]:"")).toUpperCase();
+}
+function person(id){ return state.people.filter(function(p){return p.id===id;})[0]; }
+function tasksOf(id){ return state.tasks.filter(function(t){return t.personId===id;}); }
+function isOverdue(t){ return !t.done && t.due && t.due < todayISO(); }
+function isToday(t){ return !t.done && t.due && t.due === todayISO(); }
+function fmtDate(iso){
+  if(!iso) return "";
+  var m = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  var p = iso.split("-");
+  return parseInt(p[2],10) + " " + m[parseInt(p[1],10)-1];
+}
+var PRIO_RANK = {alta:0, media:1, baja:2};
+function sortOpen(a,b){
+  var ao=isOverdue(a)?0:1, bo=isOverdue(b)?0:1; if(ao!==bo) return ao-bo;
+  var at=isToday(a)?0:1, bt=isToday(b)?0:1; if(at!==bt) return at-bt;
+  var ap=PRIO_RANK[a.priority], bp=PRIO_RANK[b.priority]; if(ap!==bp) return ap-bp;
+  if(a.due && b.due && a.due!==b.due) return a.due < b.due ? -1 : 1;
+  if(a.due && !b.due) return -1;
+  if(!a.due && b.due) return 1;
+  return (a.createdAt||"") < (b.createdAt||"") ? -1 : 1;
+}
+function $(id){ return document.getElementById(id); }
+
+/* =============== ENTRADA =============== */
+var pickedRole = "miembro";
+
+function renderKnown(){
+  var box = $("known-list");
+  if(!state.people.length){
+    box.innerHTML = '<span class="hint">Todavía no hay nadie registrado. Sé la primera.</span>';
+    return;
+  }
+  box.innerHTML = state.people.map(function(p){
+    return '<button class="chip-person" data-pid="'+p.id+'">'+esc(p.name)+
+           (p.role==="lider"?' · líder':'')+'</button>';
+  }).join("");
+  Array.prototype.forEach.call(box.querySelectorAll(".chip-person"), function(b){
+    b.onclick = function(){ enterAs(b.getAttribute("data-pid")); };
+  });
+}
+
+Array.prototype.forEach.call(document.querySelectorAll(".role-opt"), function(b){
+  b.onclick = function(){
+    document.querySelectorAll(".role-opt").forEach(function(x){ x.classList.remove("sel"); });
+    b.classList.add("sel");
+    pickedRole = b.getAttribute("data-role");
+  };
+});
+
+$("btn-enter").onclick = doEnter;
+$("in-name").addEventListener("keydown", function(e){ if(e.key==="Enter") doEnter(); });
+
+async function doEnter(){
+  var name = $("in-name").value.trim();
+  var err = $("entry-err");
+  if(!name){
+    err.textContent = "Escribe tu nombre para entrar.";
+    err.classList.remove("hidden");
+    return;
+  }
+  err.classList.add("hidden");
+  $("btn-enter").disabled = true;
+  $("btn-enter").textContent = "Entrando...";
+  var p = await findOrCreatePerson(name, pickedRole);
+  $("btn-enter").disabled = false;
+  $("btn-enter").textContent = "Entrar";
+  if(p) enterAs(p.id);
+}
+
+function enterAs(pid){
+  session.personId = pid;
+  session.tab = "mine";
+  session.viewingPersonId = null;
+  session.showDone = false;
+  $("view-entry").classList.add("hidden");
+  $("view-app").classList.remove("hidden");
+  render();
+}
+
+$("btn-exit").onclick = function(){
+  session.personId = null;
+  $("view-app").classList.add("hidden");
+  $("view-entry").classList.remove("hidden");
+  $("in-name").value = "";
+  renderKnown();
+};
+
+/* =============== TABS =============== */
+Array.prototype.forEach.call(document.querySelectorAll(".tab"), function(b){
+  b.onclick = function(){
+    session.tab = b.getAttribute("data-tab");
+    session.viewingPersonId = null;
+    render();
+  };
+});
+$("btn-back").onclick = function(){ session.viewingPersonId = null; render(); };
+
+/* =============== CAPTURA =============== */
+$("btn-more").onclick = function(){ $("composer-extra").classList.toggle("open"); };
+$("btn-add").onclick = addTask;
+$("in-task").addEventListener("keydown", function(e){ if(e.key==="Enter") addTask(); });
+["in-note"].forEach(function(id){
+  $(id).addEventListener("keydown", function(e){ if(e.key==="Enter") addTask(); });
+});
+
+async function addTask(){
+  var text = $("in-task").value.trim();
+  if(!text) return;
+  $("btn-add").disabled = true;
+  var t = await insertTask({
+    person_id: session.personId, text: text,
+    priority: $("in-prio").value,
+    due: $("in-due").value || null,
+    note: $("in-note").value.trim(),
+    done:false
+  });
+  $("btn-add").disabled = false;
+  if(!t) return;
+  $("in-task").value = "";
+  $("in-note").value = "";
+  $("in-due").value = "";
+  $("in-prio").value = "media";
+  render();
+  $("in-task").focus();
+}
+
+/* =============== RENDER: MI ESPACIO =============== */
+function renderMine(){
+  var me = person(session.personId);
+  var mine = tasksOf(me.id);
+  var open = mine.filter(function(t){return !t.done;}).sort(sortOpen);
+  var done = mine.filter(function(t){return t.done;}).sort(function(a,b){
+    return (b.doneAt||"") < (a.doneAt||"") ? -1 : 1;
+  });
+
+  var overdue = open.filter(isOverdue).length;
+  var hoy = open.filter(isToday).length;
+
+  $("greet").textContent = "Hola, " + me.name;
+  var sub = [];
+  if(overdue) sub.push(overdue + (overdue===1?" vencido":" vencidos"));
+  if(hoy) sub.push(hoy + (hoy===1?" vence hoy":" vencen hoy"));
+  $("subgreet").textContent = sub.length ? "Atención: " + sub.join(" · ")
+    : (open.length ? "Nada vencido. Vas al día." : "Sin pendientes abiertos.");
+
+  var total = mine.length;
+  var pctVal = total ? Math.round(done.length/total*100) : 0;
+  $("counts").textContent = open.length + (open.length===1?" pendiente":" pendientes") +
+                            " · " + done.length + (done.length===1?" terminado":" terminados");
+  $("pct").textContent = pctVal + "%";
+  $("bar-fill").style.width = pctVal + "%";
+
+  $("open-list").innerHTML = open.length
+    ? open.map(taskHTML).join("")
+    : '<div class="empty">Sin pendientes abiertos. Agrega uno arriba.</div>';
+
+  $("done-label").textContent = "Terminados (" + done.length + ")";
+  $("caret").textContent = session.showDone ? "▾" : "▸";
+  var dl = $("done-list");
+  dl.classList.toggle("hidden", !session.showDone);
+  dl.innerHTML = done.length ? done.map(taskHTML).join("")
+    : '<div class="empty">Todavía no has cerrado nada. Ya llegará.</div>';
+
+  wireTasks();
+}
+
+function taskHTML(t){
+  var cls = "task" + (t.done?" done":"") + (isOverdue(t)?" overdue":"") + (isToday(t)?" today":"");
+  var tags = "";
+  if(isOverdue(t)) tags += '<span class="tag venc">Vencido · '+fmtDate(t.due)+'</span>';
+  else if(isToday(t)) tags += '<span class="tag hoy">Vence hoy</span>';
+  else if(t.due && !t.done) tags += '<span class="tag">'+fmtDate(t.due)+'</span>';
+  if(!t.done) tags += '<span class="tag '+t.priority+'">'+t.priority.charAt(0).toUpperCase()+t.priority.slice(1)+'</span>';
+
+  var editing = session.editingId === t.id;
+  var edit = editing ? (
+    '<div class="editbox">' +
+      '<input class="field e-text" value="'+esc(t.text)+'">' +
+      '<div class="row">' +
+        '<div class="grp"><label class="lbl">Prioridad</label>' +
+          '<select class="field e-prio">' +
+            ['alta','media','baja'].map(function(p){
+              return '<option value="'+p+'"'+(t.priority===p?' selected':'')+'>'+p.charAt(0).toUpperCase()+p.slice(1)+'</option>';
+            }).join("") +
+          '</select></div>' +
+        '<div class="grp"><label class="lbl">Fecha límite</label>' +
+          '<input type="date" class="field e-due" value="'+esc(t.due||"")+'"></div>' +
+      '</div>' +
+      '<div class="row"><div class="grp" style="flex:1"><label class="lbl">Nota</label>' +
+        '<input class="field e-note" value="'+esc(t.note||"")+'"></div></div>' +
+      '<div class="row"><button class="btn btn-sm act-save" data-id="'+t.id+'">Guardar</button>' +
+        '<button class="btn btn-ghost btn-sm act-cancel">Cancelar</button></div>' +
+    '</div>'
+  ) : "";
+
+  return '<div class="'+cls+'" data-id="'+t.id+'">' +
+    '<button class="cbox act-toggle" data-id="'+t.id+'" aria-label="Marcar">✓</button>' +
+    '<div class="task-body">' +
+      '<div class="task-text">'+esc(t.text)+'</div>' +
+      (tags ? '<div class="meta">'+tags+'</div>' : '') +
+      (t.note && !editing ? '<div class="note">'+esc(t.note)+'</div>' : '') +
+      edit +
+    '</div>' +
+    (t.done ? '' :
+      '<div class="task-actions">' +
+        '<button class="btn-link act-edit" data-id="'+t.id+'">Editar</button>' +
+        '<button class="btn-link danger act-del" data-id="'+t.id+'">Borrar</button>' +
+      '</div>') +
+  '</div>';
+}
+
+function wireTasks(){
+  document.querySelectorAll(".act-toggle").forEach(function(b){
+    b.onclick = async function(){
+      var id = b.getAttribute("data-id");
+      var t = state.tasks.filter(function(x){return x.id===id;})[0];
+      var nowDone = !t.done;
+      await updateTask(id, {done: nowDone, done_at: nowDone ? new Date().toISOString() : null});
+      render();
+    };
+  });
+  document.querySelectorAll(".act-edit").forEach(function(b){
+    b.onclick = function(){ session.editingId = b.getAttribute("data-id"); render(); };
+  });
+  document.querySelectorAll(".act-cancel").forEach(function(b){
+    b.onclick = function(){ session.editingId = null; render(); };
+  });
+  document.querySelectorAll(".act-save").forEach(function(b){
+    b.onclick = async function(){
+      var wrap = b.closest(".task");
+      var id = b.getAttribute("data-id");
+      var nt = wrap.querySelector(".e-text").value.trim();
+      var fields = {
+        priority: wrap.querySelector(".e-prio").value,
+        due: wrap.querySelector(".e-due").value || null,
+        note: wrap.querySelector(".e-note").value.trim()
+      };
+      if(nt) fields.text = nt;
+      session.editingId = null;
+      await updateTask(id, fields);
+      render();
+    };
+  });
+  document.querySelectorAll(".act-del").forEach(function(b){
+    b.onclick = async function(){
+      var id = b.getAttribute("data-id");
+      var t = state.tasks.filter(function(x){return x.id===id;})[0];
+      if(!confirm('¿Borrar "'+t.text+'"?')) return;
+      await deleteTask(id);
+      render();
+    };
+  });
+}
+
+$("toggle-done").onclick = function(){ session.showDone = !session.showDone; render(); };
+
+/* =============== RENDER: TABLERO =============== */
+function personStats(p){
+  var all = tasksOf(p.id);
+  var open = all.filter(function(t){return !t.done;});
+  var done = all.filter(function(t){return t.done;});
+  var overdue = open.filter(isOverdue).length;
+  var pct = all.length ? Math.round(done.length/all.length*100) : 0;
+  var last = null;
+  all.forEach(function(t){
+    [t.createdAt, t.doneAt].forEach(function(d){ if(d && (!last || d>last)) last = d; });
+  });
+  var idle = last ? Math.floor((Date.now()-new Date(last).getTime())/86400000) : 99;
+  var reasons = [];
+  if(overdue) reasons.push(overdue===1 ? "1 pendiente vencido" : overdue+" pendientes vencidos");
+  if(open.length >= 6) reasons.push("carga alta: "+open.length+" abiertos");
+  if(idle >= 7 && all.length) reasons.push("sin movimiento hace "+idle+" días");
+  return {open:open, done:done, overdue:overdue, pct:pct, idle:idle, reasons:reasons};
+}
+
+function renderTeam(){
+  var rows = state.people.map(function(p){
+    return {p:p, s:personStats(p)};
+  });
+
+  var tOpen=0, tDone=0, tOver=0;
+  rows.forEach(function(r){ tOpen+=r.s.open.length; tDone+=r.s.done.length; tOver+=r.s.overdue; });
+  var tPct = (tOpen+tDone) ? Math.round(tDone/(tOpen+tDone)*100) : 0;
+
+  $("team-stats").innerHTML =
+    stat(tOpen,"Pendientes abiertos") +
+    stat(tDone,"Terminados") +
+    stat(tPct+"%","Avance del equipo") +
+    stat(tOver,"Vencidos", tOver>0);
+
+  rows.sort(function(a,b){
+    if(a.s.reasons.length !== b.s.reasons.length) return b.s.reasons.length - a.s.reasons.length;
+    if(a.s.overdue !== b.s.overdue) return b.s.overdue - a.s.overdue;
+    return a.s.pct - b.s.pct;
+  });
+
+  $("team-people").innerHTML = rows.map(function(r){
+    var p=r.p, s=r.s;
+    var top3 = s.open.sort(sortOpen).slice(0,3);
+    return '<div class="pcard'+(s.reasons.length?' attention':'')+'">' +
+      '<div class="pcard-top">' +
+        '<div class="avatar">'+esc(initials(p.name))+'</div>' +
+        '<div style="flex:1"><div class="pcard-name">'+esc(p.name)+'</div>' +
+          '<div class="pcard-role">'+(p.role==="lider"?"Líder":"Miembro")+'</div></div>' +
+        (s.reasons.length?'<span class="flag">Apoyo</span>':'') +
+      '</div>' +
+      '<div class="progress-meta"><span>'+s.open.length+' abiertos · '+s.done.length+' terminados</span><span>'+s.pct+'%</span></div>' +
+      '<div class="bar"><i style="width:'+s.pct+'%"></i></div>' +
+      (s.reasons.length ? '<div class="support">'+esc(s.reasons.join(" · "))+'</div>' : '') +
+      '<div class="mini">'+(top3.length?"Lo que trae ahora:":"Sin pendientes abiertos.")+'</div>' +
+      (top3.length ? '<ul class="plist">'+top3.map(function(t){
+          return '<li><span class="dot '+t.priority+'"></span><span style="flex:1">'+esc(t.text)+'</span>' +
+                 (isOverdue(t)?'<span class="tag venc">Vencido</span>':'') + '</li>';
+        }).join("")+'</ul>' : '') +
+      (s.open.length>3 ? '<div class="mini">+'+(s.open.length-3)+' más</div>' : '') +
+      '<div class="pcard-foot"><button class="btn btn-ghost btn-sm act-view" data-pid="'+p.id+'">Ver todo</button></div>' +
+    '</div>';
+  }).join("");
+
+  document.querySelectorAll(".act-view").forEach(function(b){
+    b.onclick = function(){ session.viewingPersonId = b.getAttribute("data-pid"); render(); };
+  });
+}
+
+function stat(val,label,warn){
+  return '<div class="stat'+(warn?' warn':'')+'"><b>'+val+'</b><span>'+label+'</span></div>';
+}
+
+/* =============== RENDER: DETALLE PERSONA =============== */
+function renderPerson(){
+  var p = person(session.viewingPersonId);
+  var s = personStats(p);
+  var open = s.open.slice().sort(sortOpen);
+  var done = s.done.slice().sort(function(a,b){ return (b.doneAt||"")<(a.doneAt||"")?-1:1; });
+
+  function ro(t){
+    var tags = "";
+    if(isOverdue(t)) tags += '<span class="tag venc">Vencido · '+fmtDate(t.due)+'</span>';
+    else if(isToday(t)) tags += '<span class="tag hoy">Vence hoy</span>';
+    else if(t.due) tags += '<span class="tag">'+fmtDate(t.due)+'</span>';
+    tags += '<span class="tag '+t.priority+'">'+t.priority.charAt(0).toUpperCase()+t.priority.slice(1)+'</span>';
+    return '<div class="task'+(isOverdue(t)?' overdue':(isToday(t)?' today':''))+'">' +
+      '<div class="task-body"><div class="task-text">'+esc(t.text)+'</div>' +
+      '<div class="meta">'+tags+'</div>' +
+      (t.note ? '<div class="note">'+esc(t.note)+'</div>' : '') + '</div></div>';
+  }
+
+  $("person-detail").innerHTML =
+    '<div class="head"><h2>'+esc(p.name)+'</h2>' +
+      '<p>'+s.open.length+' abiertos · '+s.done.length+' terminados · '+s.pct+'% de avance' +
+      (s.reasons.length ? ' — <span style="color:var(--rojo)">'+esc(s.reasons.join(" · "))+'</span>' : '') + '</p>' +
+      '<div class="progress-wrap"><div class="bar"><i style="width:'+s.pct+'%"></i></div></div></div>' +
+    '<div class="section-title">Abiertos</div>' +
+    (open.length ? open.map(ro).join("") : '<div class="empty">Sin pendientes abiertos.</div>') +
+    '<div class="section-title">Terminados ('+done.length+')</div>' +
+    (done.length ? done.map(function(t){
+       return '<div class="task done"><div class="task-body"><div class="task-text">'+esc(t.text)+'</div></div></div>';
+     }).join("") : '<div class="empty">Nada cerrado aún.</div>') +
+    '<p class="hint">Vista de solo lectura: el líder no edita pendientes de otras personas.</p>';
+}
+
+/* =============== EXPORTAR =============== */
+function download(name, content, type){
+  var blob = new Blob([content], {type:type});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 100);
+}
+$("btn-export-csv").onclick = function(){
+  var head = ["Persona","Rol","Pendiente","Prioridad","Fecha limite","Nota","Estado","Creado","Completado"];
+  function q(v){ return '"' + String(v==null?"":v).replace(/"/g,'""') + '"'; }
+  var lines = [head.map(q).join(",")];
+  state.tasks.forEach(function(t){
+    var p = person(t.personId); if(!p) return;
+    lines.push([p.name, p.role, t.text, t.priority, t.due||"", t.note||"",
+      t.done?"Terminado":"Abierto", (t.createdAt||"").slice(0,10), (t.doneAt||"").slice(0,10)].map(q).join(","));
+  });
+  download("ritmo-"+todayISO()+".csv", "﻿"+lines.join("\n"), "text/csv;charset=utf-8");
+};
+$("btn-export-json").onclick = function(){
+  download("ritmo-"+todayISO()+".json", JSON.stringify(state,null,2), "application/json");
+};
+
+/* =============== RENDER RAÍZ =============== */
+function render(){
+  var me = person(session.personId);
+  if(!me){ return; }
+  $("me-name").textContent = me.name;
+  $("me-avatar").textContent = initials(me.name);
+
+  var isLeader = me.role === "lider";
+  $("tabs").classList.toggle("hidden", !isLeader);
+  if(!isLeader){ session.tab = "mine"; session.viewingPersonId = null; }
+
+  document.querySelectorAll(".tab").forEach(function(b){
+    b.classList.toggle("active", b.getAttribute("data-tab")===session.tab);
+  });
+
+  var showPerson = isLeader && session.viewingPersonId;
+  $("panel-mine").classList.toggle("hidden", session.tab!=="mine" || showPerson);
+  $("panel-team").classList.toggle("hidden", session.tab!=="team" || showPerson);
+  $("panel-person").classList.toggle("hidden", !showPerson);
+
+  if(showPerson) renderPerson();
+  else if(session.tab==="team") renderTeam();
+  else renderMine();
+}
+
+/* =============== INIT =============== */
+(async function init(){
+  await loadState();
+  renderKnown();
+  $("in-name").focus();
+})();
+
+})();
+</script>
+</body>
+</html>
